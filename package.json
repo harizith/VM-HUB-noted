@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "pnpm --filter portal dev",
     "build": "pnpm --filter portal build",
+    "postinstall": "pnpm --filter portal postinstall",
     "start": "pnpm --filter portal start",
     "lint": "pnpm --filter portal lint",
     "prisma:generate": "pnpm --filter portal prisma:generate",
