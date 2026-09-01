@@ -16,9 +16,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+
+        // Support aliases if entered
+        const lookupEmail =
+          normalizedEmail === "hod.cse@veltech.edu.in"
+            ? "hod@veltech.edu.in"
+            : normalizedEmail;
+
         const user = await prisma.user.findUnique({
           where: {
-            email: credentials.email,
+            email: lookupEmail,
           },
         });
 
@@ -47,7 +55,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
+        token.role = (user as any).role;
       }
       return token;
     },

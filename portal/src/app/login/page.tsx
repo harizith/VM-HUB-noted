@@ -11,89 +11,175 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (loginEmail: string, loginPass: string) => {
     setLoading(true);
     setError("");
 
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        email,
-        password,
+        email: loginEmail.trim().toLowerCase(),
+        password: loginPass,
       });
 
       if (res?.error) {
-        setError("Invalid credentials");
+        setError("Invalid email or password. Please verify your credentials.");
       } else {
         router.push("/");
+        router.refresh();
       }
-    } catch (err) {
-      setError("Something went wrong");
+    } catch {
+      setError("An unexpected error occurred during sign-in.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-veltech-blue via-gray-900 to-black relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-veltech-red rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob"></div>
-      <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-veltech-blue rounded-full mix-blend-multiply filter blur-[128px] opacity-70 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-veltech-peach rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob animation-delay-4000"></div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleLogin(email, password);
+  };
 
-      <div className="relative z-10 w-full max-w-md p-8 backdrop-blur-xl bg-white/10 rounded-2xl shadow-2xl border border-white/20">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Veltech Multitech</h1>
-          <p className="text-gray-300 mt-2 text-sm">Sign in to your portal</p>
+  const quickLogin = (roleEmail: string) => {
+    setEmail(roleEmail);
+    setPassword("password123");
+    handleLogin(roleEmail, "password123");
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#FFFFFF] px-4 py-8">
+      {/* College Institutional Header Brand */}
+      <div className="w-full max-w-md mb-6 text-center space-y-1">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#AF0606] text-white font-bold text-lg shadow-sm mb-2">
+          VM
+        </div>
+        <h1 className="text-xl font-bold text-black tracking-tight">
+          Vel Tech Multitech
+        </h1>
+        <p className="text-xs text-slate-600 font-medium">
+          Autonomous Engineering College Portal (VM-HUB)
+        </p>
+      </div>
+
+      {/* Main Login Card */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
+        <div>
+          <h2 className="text-lg font-bold text-black">Sign in to your account</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Enter your institutional email address to continue
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 1-Click Quick Demo Login Cards */}
+        <div className="rounded-xl border border-[#FECDA5] bg-[#FFF6EE] p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-black">
+            <span>Quick Demo Switcher</span>
+            <span className="text-[10px] text-[#AF0606] font-mono font-bold">Default: password123</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => quickLogin("hod@veltech.edu.in")}
+              className="flex flex-col text-left p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-[#E6F1F1] hover:border-[#026466]/40 transition text-xs disabled:opacity-50"
+            >
+              <span className="font-bold text-black">HOD Mode</span>
+              <span className="text-[10px] text-slate-500 font-mono truncate">hod@veltech.edu.in</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => quickLogin("admin@veltech.edu.in")}
+              className="flex flex-col text-left p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-[#E6F1F1] hover:border-[#026466]/40 transition text-xs disabled:opacity-50"
+            >
+              <span className="font-bold text-black">Admin Mode</span>
+              <span className="text-[10px] text-slate-500 font-mono truncate">admin@veltech.edu.in</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => quickLogin("teacher@veltech.edu.in")}
+              className="flex flex-col text-left p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-[#E6F1F1] hover:border-[#026466]/40 transition text-xs disabled:opacity-50"
+            >
+              <span className="font-bold text-black">Teacher Mode</span>
+              <span className="text-[10px] text-slate-500 font-mono truncate">teacher@veltech.edu.in</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => quickLogin("student@veltech.edu.in")}
+              className="flex flex-col text-left p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-[#E6F1F1] hover:border-[#026466]/40 transition text-xs disabled:opacity-50"
+            >
+              <span className="font-bold text-black">Student Mode</span>
+              <span className="text-[10px] text-slate-500 font-mono truncate">student@veltech.edu.in</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
+          <span className="relative bg-white px-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+            Or credentials
+          </span>
+        </div>
+
+        {/* Manual Sign-in Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">Email Address</label>
+            <label className="block font-semibold text-black mb-1">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-veltech-peach focus:border-transparent transition duration-200"
-              placeholder="student@veltech.edu.in"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-black placeholder:text-slate-400 focus:outline-none focus:border-[#026466] focus:ring-1 focus:ring-[#026466]"
+              placeholder="e.g. student@veltech.edu.in"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-2">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-semibold text-black">Password</label>
+              <span className="text-[10px] text-slate-500 font-mono">Demo: password123</span>
+            </div>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-veltech-peach focus:border-transparent transition duration-200"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-lg text-black placeholder:text-slate-400 focus:outline-none focus:border-[#026466] focus:ring-1 focus:ring-[#026466] font-mono"
               placeholder="••••••••"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl text-sm">
-              {error}
+            <div className="bg-[#FDE8E8] border border-[#AF0606]/30 text-[#AF0606] px-3.5 py-2.5 rounded-lg text-xs flex items-center gap-2 font-medium">
+              <svg className="w-4 h-4 shrink-0 text-[#AF0606]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-gradient-to-r from-veltech-red to-veltech-blue hover:from-red-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg transform transition duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-veltech-peach focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 px-4 bg-[#026466] hover:bg-[#014B4D] text-white font-bold rounded-lg shadow-xs transition duration-150 focus:outline-none disabled:opacity-50 text-xs"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Verifying Credentials..." : "Sign In"}
           </button>
         </form>
-        
-        <div className="mt-6 text-center">
-          <a href="#" className="text-sm text-veltech-peach hover:text-white transition duration-200">
-            Forgot your password?
-          </a>
-        </div>
       </div>
+
+      {/* Footer Note */}
+      <p className="mt-6 text-center text-[11px] text-slate-500">
+        © {new Date().getFullYear()} Vel Tech Multitech Autonomous Institute. All rights reserved.
+      </p>
     </div>
   );
 }

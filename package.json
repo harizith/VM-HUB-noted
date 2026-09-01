@@ -1,3 +1,24 @@
 {
-  "name": "vm-hub"
+  "name": "vm-hub",
+  "private": true,
+  "workspaces": [
+    "portal"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter portal dev",
+    "build": "pnpm --filter portal build",
+    "start": "pnpm --filter portal start",
+    "lint": "pnpm --filter portal lint",
+    "prisma:generate": "pnpm --filter portal prisma:generate",
+    "prisma:push": "pnpm --filter portal prisma:push",
+    "prisma:seed": "pnpm --filter portal prisma:seed"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "prisma": "^7.9.1",
+    "tailwindcss": "^4"
+  }
 }

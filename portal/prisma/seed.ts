@@ -36,7 +36,22 @@ async function main() {
     },
   });
 
-  // 3. Create Demo Admin / Higher Official
+  // 3. Create Demo HOD
+  const hod = await prisma.user.upsert({
+    where: { email: 'hod@veltech.edu.in' },
+    update: {
+      role: Role.HOD,
+      name: 'Dr. K. Senthil Kumar (HOD / CSE)',
+    },
+    create: {
+      email: 'hod@veltech.edu.in',
+      name: 'Dr. K. Senthil Kumar (HOD / CSE)',
+      password: hashedPassword,
+      role: Role.HOD,
+    },
+  });
+
+  // 4. Create Demo Admin / Higher Official
   const admin = await prisma.user.upsert({
     where: { email: 'admin@veltech.edu.in' },
     update: {},
@@ -49,7 +64,7 @@ async function main() {
   });
 
   console.log('Seed data created successfully:');
-  console.log({ student, teacher, admin });
+  console.log({ student, teacher, hod, admin });
 }
 
 main()

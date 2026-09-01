@@ -16,6 +16,8 @@ export default async function Home() {
     redirect("/student");
   } else if (role === "TEACHER") {
     redirect("/teacher");
+  } else if (role === "HOD") {
+    redirect("/hod");
   } else if (role === "ADMIN") {
     redirect("/admin");
   }
