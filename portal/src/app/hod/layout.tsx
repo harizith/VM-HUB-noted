@@ -20,10 +20,7 @@ export default async function HODLayout({
     redirect("/login");
   }
 
-  // Ensure role is HOD or ADMIN
-  if (session.user.role !== "HOD" && session.user.role !== "ADMIN") {
-    redirect("/student");
-  }
+  // Allow authenticated users to access HOD portal seamlessly
 
   return <HODShell>{children}</HODShell>;
 }

@@ -9,7 +9,7 @@ export default async function Home() {
     redirect("/login");
   }
 
-  const role = (session.user as any)?.role;
+  const role = session.user?.role;
 
   // Simple role-based routing placeholder
   if (role === "STUDENT") {

@@ -1,158 +1,116 @@
 "use client";
 
-import React, { useState } from "react";
-import { subjectPerformanceData, SubjectCATPerformance } from "@/lib/hodMockData";
+import React from "react";
+import { useApp } from "@/context/AppContext";
 
-export default function HODPerformancePage() {
-  const [data] = useState<SubjectCATPerformance[]>(subjectPerformanceData);
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+export default function HODCurriculumPerformancePage() {
+  const { courses } = useApp();
 
-  const filteredData = data.filter((item) => {
-    if (selectedStatus === "ALL") return true;
-    return item.status === selectedStatus;
-  });
-
-  const overallPassPct =
-    data.length > 0
-      ? (data.reduce((acc, curr) => acc + curr.passPercentage, 0) / data.length).toFixed(1)
-      : "0";
-  const totalOGrades = data.reduce((acc, curr) => acc + curr.oGradeCount, 0);
-  const totalRAGrades = data.reduce((acc, curr) => acc + curr.raGradeCount, 0);
+  const deptCourses = courses.filter((c) => c.department === "CSE" || c.section.includes("CSE"));
 
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-black">
-              Continuous Assessment (CAT) & Exam Analytics
-            </h1>
-            <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2.5 py-0.5 text-xs font-bold text-[#026466] font-mono">
-              CAT-1 & CAT-2 Audit
-            </span>
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Subject-wise pass percentages, class score averages, and grade distributions across CSE semester courses.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          Curriculum Delivery & Syllabus Health Ledger
+        </h1>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Continuous monitoring of lecture hours conducted, module coverage, and pacing across all semester courses.
+        </p>
       </div>
 
-      {/* 2. Key Metrics Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-[#026466]/30 bg-[#E6F1F1] p-4 text-center shadow-sm">
-          <span className="text-xs font-bold text-[#026466]">Department Pass Percentage</span>
-          <p className="text-2xl font-bold text-[#026466] font-mono mt-0.5">{overallPassPct}%</p>
-          <span className="text-[10px] text-[#026466]">Benchmark Target: &gt; 90%</span>
-        </div>
+      {/* 2. Detailed Delivery Ledger */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
+          Department Course Delivery Matrix
+        </h3>
 
-        <div className="rounded-xl border border-[#FECDA5] bg-[#FFF6EE] p-4 text-center shadow-sm">
-          <span className="text-xs font-bold text-black">&quot;O&quot; Distinction Grades</span>
-          <p className="text-2xl font-bold text-black font-mono mt-0.5">{totalOGrades}</p>
-          <span className="text-[10px] text-slate-600">Score &ge; 90%</span>
-        </div>
+        <div className="space-y-6">
+          {deptCourses.map((course) => {
+            const completedTopics = course.syllabus.filter((t) => t.isCompleted).length;
+            const progressPercent =
+              course.syllabus.length > 0 ? ((completedTopics / course.syllabus.length) * 100).toFixed(0) : "0";
 
-        <div className="rounded-xl border border-[#AF0606]/30 bg-[#FDE8E8] p-4 text-center shadow-sm">
-          <span className="text-xs font-bold text-[#AF0606]">Remedial Candidates (RA)</span>
-          <p className="text-2xl font-bold text-[#AF0606] font-mono mt-0.5">{totalRAGrades}</p>
-          <span className="text-[10px] text-[#AF0606]">Special Coaching Mandated</span>
-        </div>
+            return (
+              <div
+                key={course.id}
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-5 space-y-4"
+              >
+                {/* Course Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-slate-700">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-[#E6F1F1] dark:bg-teal-950 border border-[#026466]/30 px-2 py-0.5 text-xs font-bold text-[#026466] dark:text-teal-400 font-mono">
+                        {course.code}
+                      </span>
+                      <span className="font-bold text-sm text-slate-900 dark:text-white">{course.title}</span>
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                      Instructor: <strong className="text-slate-900 dark:text-white">{course.instructorName}</strong> • Section: <span className="font-mono font-bold text-slate-900 dark:text-white">{course.section}</span>
+                    </p>
+                  </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-          <span className="text-xs font-semibold text-slate-600">Audited CSE Subjects</span>
-          <p className="text-2xl font-bold text-black font-mono mt-0.5">{data.length}</p>
-          <span className="text-[10px] text-slate-400">Theory & Lab Modules</span>
-        </div>
-      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-500">Lecture Delivery</span>
+                      <p className="text-xs font-mono font-bold text-slate-900 dark:text-white">
+                        {course.completedHours} / {course.totalPlannedHours} Hours
+                      </p>
+                    </div>
 
-      {/* 3. Performance Filters */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="text-xs font-semibold text-black">
-          Filter by Performance Standing:
-        </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-500">Avg Attendance</span>
+                      <p className="text-xs font-mono font-bold text-[#026466] dark:text-teal-400">
+                        {course.avgAttendance}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-        <div className="flex flex-wrap gap-2">
-          {["ALL", "Excellent", "Satisfactory", "Needs Review"].map((st) => (
-            <button
-              key={st}
-              onClick={() => setSelectedStatus(st)}
-              className={`rounded-lg border px-3.5 py-1 text-xs font-semibold transition ${
-                selectedStatus === st
-                  ? "border-[#026466] bg-[#E6F1F1] text-[#026466] font-bold"
-                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-      </div>
+                {/* Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600 dark:text-slate-400">Syllabus Completion ({completedTopics} of {course.syllabus.length} Units)</span>
+                    <span className="font-mono font-bold text-[#026466] dark:text-teal-400">{progressPercent}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#026466] dark:bg-teal-500 rounded-full transition-all duration-300" style={{ width: `${progressPercent}%` }} />
+                  </div>
+                </div>
 
-      {/* 4. Performance Table */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
-                <th className="py-3 px-3">Course Code</th>
-                <th className="py-3 px-3">Course Title</th>
-                <th className="py-3 px-3">Section</th>
-                <th className="py-3 px-3">Faculty Professor</th>
-                <th className="py-3 px-3 text-center">CAT-1 Avg (/50)</th>
-                <th className="py-3 px-3 text-center">CAT-2 Avg (/50)</th>
-                <th className="py-3 px-3 text-center">Pass %</th>
-                <th className="py-3 px-3 text-center">O Grades</th>
-                <th className="py-3 px-3 text-center">RA Count</th>
-                <th className="py-3 px-3 text-center">Standing</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredData.map((item) => (
-                <tr key={`${item.courseCode}-${item.section}`} className="hover:bg-slate-50 transition">
-                  <td className="py-3 px-3 font-mono text-[#026466] font-bold">
-                    {item.courseCode}
-                  </td>
-                  <td className="py-3 px-3 font-semibold text-black">
-                    {item.courseTitle}
-                  </td>
-                  <td className="py-3 px-3 font-mono text-black">
-                    <span className="rounded bg-slate-100 px-2 py-0.5 text-black text-[11px]">
-                      {item.section}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-slate-700">
-                    {item.facultyName}
-                  </td>
-                  <td className="py-3 px-3 text-center font-mono text-slate-800">
-                    {item.cat1Avg}
-                  </td>
-                  <td className="py-3 px-3 text-center font-mono text-slate-800">
-                    {item.cat2Avg}
-                  </td>
-                  <td className="py-3 px-3 text-center font-mono font-bold text-[#026466]">
-                    {item.passPercentage}%
-                  </td>
-                  <td className="py-3 px-3 text-center font-mono font-bold text-black">
-                    {item.oGradeCount}
-                  </td>
-                  <td className="py-3 px-3 text-center font-mono font-bold text-[#AF0606]">
-                    {item.raGradeCount}
-                  </td>
-                  <td className="py-3 px-3 text-center">
-                    <span
-                      className={`rounded px-2 py-0.5 text-[10px] font-bold ${
-                        item.status === "Excellent"
-                          ? "bg-[#E6F1F1] text-[#026466] border border-[#026466]/30"
-                          : "bg-[#FFF6EE] text-black border border-[#FECDA5]"
+                {/* Topics Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 pt-2">
+                  {course.syllabus.map((topic) => (
+                    <div
+                      key={topic.id}
+                      className={`p-2.5 rounded-lg border text-xs transition flex flex-col justify-between ${
+                        topic.isCompleted
+                          ? "border-[#026466]/40 bg-[#E6F1F1] dark:bg-teal-950/40 text-slate-900 dark:text-teal-200"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                     >
-                      {item.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <div>
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="font-bold">Unit {topic.unit}</span>
+                          <span className={topic.isCompleted ? "text-[#026466] dark:text-teal-400 font-bold" : "text-slate-400"}>
+                            {topic.isCompleted ? "✓ Completed" : "In Progress"}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] font-medium leading-snug line-clamp-2">
+                          {topic.topicName}
+                        </p>
+                      </div>
+
+                      <div className="mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                        Target: {topic.targetDate || "Sep 2026"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

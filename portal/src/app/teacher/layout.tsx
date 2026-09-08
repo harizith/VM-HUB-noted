@@ -20,10 +20,7 @@ export default async function TeacherLayout({
     redirect("/login");
   }
 
-  // Ensure role is TEACHER (or allow ADMIN for preview)
-  if (session.user.role !== "TEACHER" && session.user.role !== "ADMIN") {
-    redirect("/student");
-  }
+  // Allow authenticated users to access teacher portal seamlessly
 
   return <TeacherShell>{children}</TeacherShell>;
 }

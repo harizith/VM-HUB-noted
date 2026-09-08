@@ -13,6 +13,40 @@ enum Role {
   ADMIN
 }
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  ON_DUTY
+}
+
+enum PetitionType {
+  MEDICAL
+  CASUAL
+  ON_DUTY
+  HACKATHON
+  SYMPOSIUM
+}
+
+enum PetitionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CircularUrgency {
+  CRITICAL
+  ACADEMIC
+  GENERAL
+  EVENT
+}
+
+enum TargetAudience {
+  ALL
+  STUDENTS_ONLY
+  FACULTY_ONLY
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -21,13 +55,76 @@ model User {
   image         String?
   password      String?
   role          Role      @default(STUDENT)
+  department    String?   @default("Computer Science & Engineering")
   
   // Relations
+  profile       UserProfile?
   accounts      Account[]
   sessions      Session[]
   
+  attendanceRecords AttendanceRecord[]
+  leavePetitions    LeavePetition[]    @relation("StudentPetitions")
+  reviewedPetitions LeavePetition[]    @relation("TeacherReviewedPetitions")
+  circularsAuthored Circular[]
+  circularReceipts  CircularReceipt[]
+  assessmentMarks   AssessmentMarks[]
+  
+  // Mentorship relations
+  mentees           MentorAllocation[] @relation("MentorToAllocations")
+  mentorRecord      MentorAllocation[] @relation("StudentToAllocation")
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([role])
+  @@index([department])
+}
+
+model UserProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Student Specific
+  registerNumber   String?  @unique
+  rollNumber       String?
+  section          String?  // CSE-A, CSE-B
+  year             String?  // 1st Year, 2nd Year, 3rd Year, 4th Year
+  semester         String?  // Semester 1 to 8
+  cgpa             Float?   @default(0.0)
+  creditsEarned    Int?     @default(0)
+  totalCredits     Int?     @default(160)
+  arrearsCount     Int?     @default(0)
+  degree           String?  @default("B.E. Computer Science & Engineering")
+  batch            String?  @default("2022 - 2026")
+  
+  // Faculty & HOD Specific
+  staffId          String?  @unique
+  designation      String?  // Assistant Professor, Associate Professor, Professor & HOD
+  joiningDate      String?
+  qualifications   String?  // Ph.D., M.E., B.Tech
+  experience       String?  // 8+ Years
+  researchAreas    String?  // Cloud Computing, AI, Distributed Systems
+  mentorCabin      String?  // Admin Block Room 304
+  mentorPhone      String?
+  mentorEmail      String?
+  
+  // Common Demographics
+  phone            String?
+  dob              String?
+  gender           String?  // Male, Female, Other
+  bloodGroup       String?  // O+, A+, B+, AB+, etc.
+  address          String?  @db.Text
+  bio              String?  @db.Text
+  
+  // Guardian & Emergency
+  guardianName     String?
+  guardianPhone    String?
+  guardianEmail    String?
+  emergencyContact String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Account {
@@ -36,12 +133,12 @@ model Account {
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String?  @db.Text
+  id_token           String? @db.Text
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -63,4 +160,215 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ==========================================
+// ACADEMIC & ATTENDANCE MODULE
+// ==========================================
+
+model AttendanceSession {
+  id          String             @id @default(cuid())
+  date        DateTime           @default(now())
+  department  String             @default("CSE")
+  section     String             // CSE-A, CSE-B
+  period      Int                // 1 to 7
+  subjectCode String
+  subjectName String
+  takenBy     String             // Faculty User ID or Name
+  records     AttendanceRecord[]
+  createdAt   DateTime           @default(now())
+
+  @@index([section, date])
+}
+
+model AttendanceRecord {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    AttendanceStatus  @default(PRESENT)
+  remarks   String?
+  createdAt DateTime          @default(now())
+
+  @@unique([sessionId, studentId])
+  @@index([studentId, status])
+}
+
+// ==========================================
+// LEAVE & ON-DUTY PETITIONS
+// ==========================================
+
+model LeavePetition {
+  id               String         @id @default(cuid())
+  studentId        String
+  student          User           @relation("StudentPetitions", fields: [studentId], references: [id], onDelete: Cascade)
+  type             PetitionType   @default(CASUAL)
+  fromDate         DateTime
+  toDate           DateTime
+  totalDays        Int            @default(1)
+  reason           String         @db.Text
+  documentUrl      String?
+  status           PetitionStatus @default(PENDING)
+  reviewedById     String?
+  reviewedBy       User?          @relation("TeacherReviewedPetitions", fields: [reviewedById], references: [id])
+  reviewerRemarks  String?
+  reviewedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([studentId, status])
+}
+
+// ==========================================
+// CIRCULARS & BROADCASTS
+// ==========================================
+
+model Circular {
+  id             String            @id @default(cuid())
+  title          String
+  content        String            @db.Text
+  category       String            @default("Academic")
+  urgency        CircularUrgency   @default(GENERAL)
+  targetAudience TargetAudience    @default(ALL)
+  department     String?           @default("CSE")
+  attachmentUrl  String?
+  authorId       String
+  author         User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  receipts       CircularReceipt[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([department, urgency])
+}
+
+model CircularReceipt {
+  id         String    @id @default(cuid())
+  circularId String
+  circular   Circular  @relation(fields: [circularId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt     DateTime  @default(now())
+
+  @@unique([circularId, userId])
+}
+
+// ==========================================
+// COURSES, SYLLABUS & MARKS
+// ==========================================
+
+model Course {
+  id           String          @id @default(cuid())
+  code         String          @unique
+  name         String
+  credits      Int             @default(3)
+  semester     Int             @default(6)
+  department   String          @default("CSE")
+  type         String          @default("Theory") // Theory, Practical, Integrated
+  syllabusUnits SyllabusUnit[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model SyllabusUnit {
+  id          String          @id @default(cuid())
+  unitNumber  Int
+  title       String
+  courseId    String
+  course      Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  topics      SyllabusTopic[]
+  createdAt   DateTime        @default(now())
+}
+
+model SyllabusTopic {
+  id          String       @id @default(cuid())
+  topicName   String
+  lectures    Int          @default(1)
+  isCompleted Boolean      @default(false)
+  completedAt DateTime?
+  unitId      String
+  unit        SyllabusUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+}
+
+model AssessmentMarks {
+  id             String   @id @default(cuid())
+  studentId      String
+  student        User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  courseCode     String
+  courseName     String
+  cat1           Float?   @default(0) // Out of 50
+  cat2           Float?   @default(0) // Out of 50
+  modelExam      Float?   @default(0) // Out of 100
+  assignment     Float?   @default(0) // Out of 10
+  projectedGrade String?  @default("A+")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([studentId, courseCode])
+}
+
+// ==========================================
+// MENTOR ALLOCATION MATRIX
+// ==========================================
+
+model MentorAllocation {
+  id                 String    @id @default(cuid())
+  mentorId           String
+  mentor             User      @relation("MentorToAllocations", fields: [mentorId], references: [id], onDelete: Cascade)
+  studentId          String    @unique
+  student            User      @relation("StudentToAllocation", fields: [studentId], references: [id], onDelete: Cascade)
+  lastCounselingDate DateTime?
+  counselingNotes    String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// ==========================================
+// TIMETABLE MATRIX (Available for Main & Timetable-Branch)
+// ==========================================
+
+model TimetableSchedule {
+  id           String        @id @default(cuid())
+  department   String        @default("CSE")
+  section      String        // CSE-A, CSE-B
+  academicYear String        @default("2025-2026")
+  semester     Int           @default(6)
+  dayOfWeek    String        // Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+  periods      ClassPeriod[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([department, section, dayOfWeek])
+}
+
+model ClassPeriod {
+  id          String            @id @default(cuid())
+  scheduleId  String
+  schedule    TimetableSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  periodNo    Int               // 1 to 7
+  timeSlot    String            // "08:45 - 09:35", etc.
+  courseCode  String
+  courseTitle String
+  facultyName String
+  roomNo      String            @default("LH-302")
+  createdAt   DateTime          @default(now())
+
+  @@unique([scheduleId, periodNo])
+}
+
+// ==========================================
+// AUDIT & TELEMETRY
+// ==========================================
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actor     String
+  target    String
+  details   String?  @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([action, createdAt])
 }

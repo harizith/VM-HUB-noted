@@ -1,16 +1,25 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useApp } from "@/context/AppContext";
 import {
-  studentProfile,
   attendanceData,
   internalMarksData,
   getTodayPeriodsForBranch,
-  announcementsData,
+  Branch,
 } from "@/lib/studentMockData";
 import StatCard from "@/components/student/StatCard";
 import AttendanceMeter from "@/components/student/AttendanceMeter";
 
 export default function StudentDashboardPage() {
+  const { currentUser, users, circulars } = useApp();
+
+  // Resolve student persona directly to avoid admin metadata leakage
+  const student = currentUser.role === "STUDENT"
+    ? currentUser
+    : users.find((u) => u.role === "STUDENT") || currentUser;
+
   // Calculate average attendance
   const totalClasses = attendanceData.reduce((acc, curr) => acc + curr.totalHours, 0);
   const totalAttended = attendanceData.reduce((acc, curr) => acc + curr.attendedHours, 0);
@@ -21,31 +30,42 @@ export default function StudentDashboardPage() {
 
   // Today's timetable dynamically fetched from student's branch
   const todayDay = "Monday";
-  const todaySchedule = getTodayPeriodsForBranch(studentProfile.branch, todayDay);
+  const validBranch: Branch = (["CSE", "IT", "ECE", "AIDS", "MECH"].includes(student.department as Branch)
+    ? student.department
+    : "CSE") as Branch;
+  const todaySchedule = getTodayPeriodsForBranch(validBranch, todayDay);
 
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* 1. Student Hero Profile Banner */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-md bg-[#E6F1F1] border border-[#026466]/30 px-2.5 py-0.5 text-xs font-semibold text-[#026466]">
-              <span>{studentProfile.degree} {studentProfile.department}</span>
+            <div className="inline-flex items-center gap-2 rounded-md bg-[#E6F1F1] dark:bg-slate-800 border border-[#026466]/30 px-2.5 py-0.5 text-xs font-semibold text-[#026466] dark:text-teal-400">
+              <span>B.E. {student.department || "Computer Science & Engineering"}</span>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-black">
-              Welcome back, {studentProfile.name}
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Welcome back, {student.name}
             </h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
               <span>
-                Reg No: <strong className="text-black font-mono">{studentProfile.registerNumber}</strong>
+                Reg No: <strong className="text-slate-900 dark:text-white font-mono">{student.regNo || "113125UG03049"}</strong>
               </span>
               <span>•</span>
               <span>
-                Semester: <strong className="text-black">{studentProfile.semester} ({studentProfile.section})</strong>
+                VM No: <strong className="text-slate-900 dark:text-white font-mono">{student.rollNo || "17433"}</strong>
               </span>
               <span>•</span>
               <span>
-                Mentor: <strong className="text-black">{studentProfile.mentor}</strong>
+                Program Batch: <strong className="text-[#026466] dark:text-teal-400 font-mono font-bold">{student.batch || "2025-2029"}</strong>
+              </span>
+              <span>•</span>
+              <span>
+                Semester: <strong className="text-slate-900 dark:text-white">{student.semester || 3} ({student.section || "CSE-A"})</strong>
+              </span>
+              <span>•</span>
+              <span>
+                Mentor: <strong className="text-slate-900 dark:text-white">{student.mentor || "Mr. R. Prabhakaran"}</strong>
               </span>
             </div>
           </div>
@@ -54,15 +74,15 @@ export default function StudentDashboardPage() {
           <div className="flex flex-wrap gap-2.5">
             <Link
               href="/student/attendance"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-black hover:bg-[#FFF6EE] hover:border-[#FECDA5] transition"
-            >
-              View Attendance
-            </Link>
-            <Link
-              href="/student/courses"
               className="rounded-lg bg-[#026466] hover:bg-[#014B4D] px-4 py-2 text-xs font-bold text-white shadow-xs transition"
             >
-              Internal Marks
+              Attendance &amp; Bunk Predictor
+            </Link>
+            <Link
+              href="/student/leave"
+              className="rounded-lg border border-[#FECDA5] dark:border-amber-900/50 bg-[#FFF6EE] dark:bg-amber-950/20 hover:bg-[#FECDA5]/40 px-4 py-2 text-xs font-bold text-slate-900 dark:text-amber-200 transition"
+            >
+              + Digital Leave / OD
             </Link>
           </div>
         </div>
@@ -87,7 +107,7 @@ export default function StudentDashboardPage() {
 
         <StatCard
           title="Cumulative GPA"
-          value={studentProfile.cgpa.toFixed(2)}
+          value={(student.cgpa || 8.74).toFixed(2)}
           subtitle="Out of 10.0 scale"
           badge={{
             text: "First Class with Distinction",
@@ -102,8 +122,8 @@ export default function StudentDashboardPage() {
 
         <StatCard
           title="Degree Credits"
-          value={`${studentProfile.completedCredits} / ${studentProfile.totalCredits}`}
-          subtitle={`${((studentProfile.completedCredits / studentProfile.totalCredits) * 100).toFixed(0)}% Completion`}
+          value="118 / 160"
+          subtitle="74% Completion"
           badge={{
             text: "On Track",
             type: "info",
@@ -117,7 +137,7 @@ export default function StudentDashboardPage() {
 
         <StatCard
           title="Active Courses"
-          value={attendanceData.length}
+          value={attendanceData.length.toString()}
           subtitle="Semester VI Registered"
           badge={{
             text: "5 Theory • 2 Labs",
@@ -134,16 +154,16 @@ export default function StudentDashboardPage() {
       {/* 3. Main Two-Column Section: Today's Schedule & Attendance Gauge */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Today's Class Schedule */}
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="text-sm font-bold text-black">Today&apos;s Class Schedule</h3>
-                <p className="text-xs text-slate-500">Monday • 7 Periods</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Today&apos;s Class Schedule</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Monday • 8 Official Periods (Room N 204)</p>
               </div>
               <Link
                 href="/student/timetable"
-                className="text-xs font-semibold text-[#026466] hover:underline"
+                className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline"
               >
                 Full Week Timetable →
               </Link>
@@ -151,41 +171,41 @@ export default function StudentDashboardPage() {
 
             {/* Schedule List */}
             <div className="mt-4 space-y-2">
-              {todaySchedule.slice(0, 5).map((slot) => (
+              {todaySchedule.slice(0, 6).map((slot) => (
                 <div
                   key={slot.period}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 hover:bg-slate-100/70 transition"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-3 hover:bg-slate-100/70 dark:hover:bg-slate-800 transition"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white border border-slate-200 text-xs font-bold font-mono text-black">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold font-mono text-slate-900 dark:text-white">
                       P{slot.period}
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-black">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
                           {slot.courseTitle}
                         </span>
-                        <span className="text-[10px] font-mono text-[#026466] font-semibold">
+                        <span className="text-[10px] font-mono text-[#026466] dark:text-teal-400 font-semibold">
                           ({slot.courseCode})
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 mt-0.5">
-                        {slot.faculty} • <span className="text-black font-semibold">{slot.room}</span>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                        {slot.faculty} • <span className="text-slate-900 dark:text-white font-semibold">{slot.room}</span>
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-3">
-                    <span className="text-xs font-mono text-slate-700 font-medium">
+                    <span className="text-xs font-mono text-slate-700 dark:text-slate-300 font-medium">
                       {slot.time}
                     </span>
                     <span
                       className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                         slot.type === "lab"
-                          ? "bg-[#FFF6EE] text-[#AF0606] border border-[#FECDA5]"
+                          ? "bg-[#FFF6EE] dark:bg-amber-950 text-[#AF0606] dark:text-amber-200 border border-[#FECDA5]"
                           : slot.type === "theory"
-                          ? "bg-[#E6F1F1] text-[#026466] border border-[#026466]/30"
-                          : "bg-slate-100 text-slate-800 border border-slate-200"
+                          ? "bg-[#E6F1F1] dark:bg-teal-950 text-[#026466] dark:text-teal-400 border border-[#026466]/30"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200"
                       }`}
                     >
                       {slot.type}
@@ -196,19 +216,19 @@ export default function StudentDashboardPage() {
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Next break: 12:25 PM (Lunch Break)</span>
-            <span>Classes end at 03:55 PM</span>
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+            <span>Next break: 11:40 AM (Lunch Break)</span>
+            <span>Classes conclude at 03:30 PM</span>
           </div>
         </div>
 
-        {/* Right Col: Quick Attendance Health Meter & Alerts */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between space-y-6">
+        {/* Right Col: Attendance Gauge */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm flex flex-col justify-between space-y-6">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-black">Attendance Meter</h3>
-              <Link href="/student/attendance" className="text-xs font-semibold text-[#026466] hover:underline">
-                Details →
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Attendance Meter</h3>
+              <Link href="/student/attendance" className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline">
+                Forecaster →
               </Link>
             </div>
 
@@ -216,39 +236,33 @@ export default function StudentDashboardPage() {
               <AttendanceMeter percentage={overallAttendance} size={140} strokeWidth={10} />
             </div>
 
-            {/* Critical alert banner if any subject < 75% */}
             {criticalSubjects.length > 0 ? (
-              <div className="rounded-lg border border-[#AF0606]/30 bg-[#FDE8E8] p-3 text-xs text-[#AF0606]">
-                <div className="flex items-start gap-2">
-                  <div>
-                    <p className="font-bold text-[#AF0606]">Attendance Warning</p>
-                    <p className="mt-0.5 text-[11px] text-black leading-relaxed">
-                      You are below 75% in <strong className="text-[#AF0606]">{criticalSubjects[0].courseTitle}</strong> ({criticalSubjects[0].percentage}%).
-                    </p>
-                  </div>
-                </div>
+              <div className="rounded-lg border border-[#AF0606]/30 dark:border-rose-900/40 bg-[#FDE8E8] dark:bg-rose-950/30 p-3 text-xs text-[#AF0606] dark:text-rose-400">
+                <p className="font-bold">Statutory Warning</p>
+                <p className="mt-0.5 text-[11px] text-slate-800 dark:text-slate-200 leading-relaxed">
+                  You are below 75% in <strong className="text-[#AF0606] dark:text-rose-400">{criticalSubjects[0].courseTitle}</strong> ({criticalSubjects[0].percentage}%).
+                </p>
               </div>
             ) : (
-              <div className="rounded-lg border border-[#026466]/30 bg-[#E6F1F1] p-3 text-xs text-[#026466]">
-                <p className="font-bold text-[#026466]">All Subjects Above 75%</p>
-                <p className="text-[11px] text-slate-800 mt-0.5">
-                  You are eligible for all end-semester examinations without proctor condonation.
+              <div className="rounded-lg border border-[#026466]/30 dark:border-teal-800 bg-[#E6F1F1] dark:bg-teal-950/40 p-3 text-xs text-[#026466] dark:text-teal-400">
+                <p className="font-bold">Eligible for Exams</p>
+                <p className="text-[11px] text-slate-800 dark:text-slate-300 mt-0.5">
+                  All registered courses satisfy the 75% attendance threshold.
                 </p>
               </div>
             )}
           </div>
 
-          {/* Quick Summary of All Courses */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
             <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Quick Subject Breakdown
             </p>
             {attendanceData.slice(0, 3).map((item) => (
               <div key={item.id} className="flex items-center justify-between text-xs">
-                <span className="text-black truncate max-w-[160px]">{item.courseTitle}</span>
+                <span className="text-slate-900 dark:text-white truncate max-w-[160px]">{item.courseTitle}</span>
                 <span
                   className={`font-mono font-bold ${
-                    item.percentage >= 75 ? "text-[#026466]" : "text-[#AF0606]"
+                    item.percentage >= 75 ? "text-[#026466] dark:text-teal-400" : "text-[#AF0606] dark:text-rose-400"
                   }`}
                 >
                   {item.percentage}%
@@ -259,24 +273,24 @@ export default function StudentDashboardPage() {
         </div>
       </div>
 
-      {/* 4. Bottom Section: Announcements & Recent Assessment Scores */}
+      {/* 4. Bottom Section: Assessment Scores & Live Circulars Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Latest Internal Marks */}
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-black">Internal Assessment Highlights</h3>
-              <p className="text-xs text-slate-500">Continuous Assessment Tests (CAT-1 & CAT-2)</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Internal Assessment Highlights</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Continuous Assessment Tests (CAT-1 &amp; CAT-2)</p>
             </div>
-            <Link href="/student/courses" className="text-xs font-semibold text-[#026466] hover:underline">
-              All Courses & Marks →
+            <Link href="/student/courses" className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline">
+              All Courses &amp; Marks →
             </Link>
           </div>
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider">
                   <th className="pb-3 pl-2">Subject</th>
                   <th className="pb-3 text-center">CAT-1 (/50)</th>
                   <th className="pb-3 text-center">CAT-2 (/50)</th>
@@ -285,21 +299,21 @@ export default function StudentDashboardPage() {
                   <th className="pb-3 text-center pr-2">Grade</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {internalMarksData.slice(0, 5).map((mark) => (
-                  <tr key={mark.id} className="hover:bg-slate-50 transition">
-                    <td className="py-3 pl-2 font-semibold text-black">
+                  <tr key={mark.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td className="py-3 pl-2 font-semibold text-slate-900 dark:text-white">
                       <div>{mark.courseTitle}</div>
                       <div className="text-[10px] text-slate-500 font-mono">{mark.courseCode}</div>
                     </td>
-                    <td className="py-3 text-center font-mono text-slate-800">{mark.cat1.score}</td>
-                    <td className="py-3 text-center font-mono text-slate-800">{mark.cat2.score}</td>
-                    <td className="py-3 text-center font-mono text-slate-800">{mark.modelExam.score}</td>
-                    <td className="py-3 text-center font-mono font-bold text-black">
+                    <td className="py-3 text-center font-mono text-slate-800 dark:text-slate-200">{mark.cat1.score}</td>
+                    <td className="py-3 text-center font-mono text-slate-800 dark:text-slate-200">{mark.cat2.score}</td>
+                    <td className="py-3 text-center font-mono text-slate-800 dark:text-slate-200">{mark.modelExam.score}</td>
+                    <td className="py-3 text-center font-mono font-bold text-slate-900 dark:text-white">
                       {mark.totalInternal.toFixed(1)}
                     </td>
                     <td className="py-3 text-center pr-2">
-                      <span className="inline-flex rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 font-bold text-[#026466] font-mono text-[11px]">
+                      <span className="inline-flex rounded bg-[#E6F1F1] dark:bg-teal-950 border border-[#026466]/30 px-2 py-0.5 font-bold text-[#026466] dark:text-teal-400 font-mono text-[11px]">
                         {mark.grade}
                       </span>
                     </td>
@@ -310,27 +324,29 @@ export default function StudentDashboardPage() {
           </div>
         </div>
 
-        {/* Right: Announcements */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-black">Academic Circulars</h3>
-            <span className="text-[10px] font-bold text-[#AF0606] uppercase">Notices</span>
+        {/* Right: Circulars Feed */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Academic Circulars</h3>
+            <Link href="/student/circulars" className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline">
+              View All →
+            </Link>
           </div>
 
           <div className="space-y-3">
-            {announcementsData.map((ann) => (
+            {circulars.slice(0, 3).map((ann) => (
               <div
                 key={ann.id}
-                className="rounded-lg border border-[#FECDA5]/50 bg-[#FFF6EE]/40 p-3 hover:bg-[#FFF6EE] transition"
+                className="rounded-lg border border-[#FECDA5]/50 dark:border-amber-900/30 bg-[#FFF6EE]/40 dark:bg-amber-950/10 p-3 hover:bg-[#FFF6EE] dark:hover:bg-amber-950/20 transition space-y-1.5"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466]">
+                  <span className="rounded bg-[#E6F1F1] dark:bg-teal-950 border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466] dark:text-teal-400">
                     {ann.category}
                   </span>
-                  <span className="text-[10px] text-slate-600 font-mono">{ann.date}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{ann.date}</span>
                 </div>
-                <h4 className="mt-2 text-xs font-bold text-black leading-snug">{ann.title}</h4>
-                <p className="mt-1 text-[11px] text-slate-700 line-clamp-2 leading-relaxed">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug">{ann.title}</h4>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">
                   {ann.content}
                 </p>
               </div>

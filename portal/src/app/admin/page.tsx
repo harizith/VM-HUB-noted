@@ -1,30 +1,48 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import {
-  institutionalStats,
-  branchStats,
-  initialCollegeAnnouncements,
-} from "@/lib/adminMockData";
-import { Branch } from "@/lib/studentMockData";
+import { useApp } from "@/context/AppContext";
 import StatCard from "@/components/student/StatCard";
 
 export default function AdminDashboardPage() {
-  const branchKeys = Object.keys(branchStats) as Branch[];
+  const { users, courses, attendanceSessions, circulars, auditLogs, resetDatabase } = useApp();
+
+  const totalStudents = users.filter((u) => u.role === "STUDENT").length;
+  const totalFaculty = users.filter((u) => u.role === "TEACHER").length;
+  const totalHODs = users.filter((u) => u.role === "HOD").length;
+  const activeCoursesCount = courses.length;
+
+  // Aggregate student attendance
+  const studentUsers = users.filter((u) => u.role === "STUDENT" && u.attendancePercent !== undefined);
+  const avgAttendance =
+    studentUsers.length > 0
+      ? (studentUsers.reduce((acc, u) => acc + (u.attendancePercent || 0), 0) / studentUsers.length).toFixed(1)
+      : "88.0";
+
+  // Branch summaries
+  const branches = [
+    { code: "CSE", name: "Computer Science & Engineering", hod: "Dr. K. Senthil Kumar", room: "TP-301", students: users.filter((u) => u.department.includes("Computer") || u.section?.includes("CSE")).length || 60, att: "88.5%" },
+    { code: "IT", name: "Information Technology", hod: "Dr. M. Sridhar", room: "MB-204", students: 48, att: "89.2%" },
+    { code: "ECE", name: "Electronics & Communication", hod: "Dr. G. Revathi", room: "EC-101", students: 54, att: "86.7%" },
+    { code: "AIDS", name: "Artificial Intelligence & Data Science", hod: "Dr. P. Rajesh", room: "TP-402", students: 42, att: "90.1%" },
+    { code: "MECH", name: "Mechanical Engineering", hod: "Dr. T. Natarajan", room: "MB-108", students: 38, att: "84.5%" },
+  ];
 
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* 1. Dean / Executive Hero Banner */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-md bg-[#E6F1F1] border border-[#026466]/30 px-2.5 py-0.5 text-xs font-semibold text-[#026466]">
+            <div className="inline-flex items-center gap-2 rounded-md bg-[#E6F1F1] dark:bg-slate-800 border border-[#026466]/30 px-2.5 py-0.5 text-xs font-semibold text-[#026466] dark:text-teal-400">
               <span>Vel Tech Multitech Autonomous Institute</span>
             </div>
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-black">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Academic Dean & Institutional Console
             </h1>
-            <p className="text-xs text-slate-500">
-              Executive oversight across 5 engineering departments, student records, faculty workloads, and examination readiness.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Executive oversight across 5 engineering departments, student records, faculty workloads, mentee allocation matrix, and examination readiness.
             </p>
           </div>
 
@@ -34,14 +52,24 @@ export default function AdminDashboardPage() {
               href="/admin/students"
               className="rounded-lg bg-[#026466] hover:bg-[#014B4D] px-4 py-2 text-xs font-bold text-white shadow-xs transition"
             >
-              + Register Student
+              + Provision User
             </Link>
             <Link
-              href="/admin/announcements"
-              className="rounded-lg border border-slate-300 bg-white hover:bg-[#FFF6EE] px-4 py-2 text-xs font-medium text-black transition"
+              href="/admin/mentors"
+              className="rounded-lg border border-[#FECDA5] dark:border-amber-900/50 bg-[#FFF6EE] dark:bg-amber-950/20 hover:bg-[#FECDA5]/40 px-4 py-2 text-xs font-bold text-slate-900 dark:text-amber-200 transition"
             >
-              Issue Circular
+              Mentor Matrix
             </Link>
+            <button
+              onClick={() => {
+                if (confirm("Restore institutional database to factory seed state?")) {
+                  resetDatabase();
+                }
+              }}
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-[#FDE8E8] dark:hover:bg-rose-950/30 hover:text-[#AF0606] px-4 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 transition"
+            >
+              🔄 Reset DB
+            </button>
           </div>
         </div>
       </div>
@@ -49,11 +77,11 @@ export default function AdminDashboardPage() {
       {/* 2. Institutional KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Students"
-          value={institutionalStats.totalStudents.toLocaleString()}
-          subtitle="Across 5 Engineering Branches"
+          title="Total Registered Students"
+          value={totalStudents.toString()}
+          subtitle="Enrolled in Autonomous Batches"
           badge={{
-            text: "100% Enrolled",
+            text: "100% Active",
             type: "bluestone",
           }}
           icon={
@@ -65,8 +93,8 @@ export default function AdminDashboardPage() {
 
         <StatCard
           title="Faculty Members"
-          value={institutionalStats.totalFaculty}
-          subtitle="1:23 Staff-to-Student Ratio"
+          value={`${totalFaculty} Faculty • ${totalHODs} HODs`}
+          subtitle="Staff-to-Student Ratio ~ 1:20"
           badge={{
             text: "Fully Staffed",
             type: "info",
@@ -80,10 +108,10 @@ export default function AdminDashboardPage() {
 
         <StatCard
           title="Curriculum Courses"
-          value={institutionalStats.activeCourses}
+          value={activeCoursesCount.toString()}
           subtitle="Autonomous Syllabus Modules"
           badge={{
-            text: "Odd & Even Terms",
+            text: "Active Terms",
             type: "info",
           }}
           icon={
@@ -94,11 +122,11 @@ export default function AdminDashboardPage() {
         />
 
         <StatCard
-          title="Institute Attendance"
-          value={`${institutionalStats.collegeAvgAttendance}%`}
-          subtitle="Target Benchmark: > 85.0%"
+          title="Institute Average Attendance"
+          value={`${avgAttendance}%`}
+          subtitle="Target Statutory Benchmark: > 75.0%"
           badge={{
-            text: "Above Target",
+            text: "Compliant",
             type: "bluestone",
           }}
           icon={
@@ -110,116 +138,110 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* 3. Five Engineering Departments Breakdown */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Department Performance Matrix
             </h3>
-            <p className="text-xs text-slate-500">
-              Real-time student headcount, faculty strength, and attendance health across all branches.
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Head of Departments, classrooms, and attendance health indices across disciplines.
             </p>
           </div>
           <Link
             href="/admin/courses"
-            className="text-xs font-semibold text-[#026466] hover:underline"
+            className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline"
           >
             Course Catalog & Syllabi →
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {branchKeys.map((code) => {
-            const branch = branchStats[code];
-            return (
-              <div
-                key={code}
-                className="rounded-lg border border-slate-100 bg-slate-50 p-4 flex flex-col justify-between hover:bg-slate-100/70 transition"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 text-xs font-bold text-[#026466] font-mono">
-                      {branch.code}
-                    </span>
-                    <span className="text-[10px] font-mono text-black font-bold">
-                      {branch.classroom}
-                    </span>
-                  </div>
-
-                  <h4 className="mt-2 text-xs font-bold text-black leading-snug">
-                    {branch.name}
-                  </h4>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    HOD: <span className="text-black font-medium">{branch.hodName}</span>
-                  </p>
+          {branches.map((b) => (
+            <div
+              key={b.code}
+              className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4 flex flex-col justify-between hover:bg-slate-100/70 dark:hover:bg-slate-800 transition"
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="rounded bg-[#E6F1F1] dark:bg-slate-800 border border-[#026466]/30 px-2 py-0.5 text-xs font-bold text-[#026466] dark:text-teal-400 font-mono">
+                    {b.code}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-800 dark:text-slate-300 font-bold">
+                    {b.room}
+                  </span>
                 </div>
 
-                <div className="mt-3 pt-2.5 border-t border-slate-200/60 space-y-1 text-[11px]">
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Students:</span>
-                    <strong className="text-black font-mono">{branch.studentsCount}</strong>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Faculty:</span>
-                    <strong className="text-black font-mono">{branch.facultyCount}</strong>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Avg Att:</span>
-                    <strong className="text-[#026466] font-mono">{branch.avgAttendance}%</strong>
-                  </div>
+                <h4 className="mt-2 text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                  {b.name}
+                </h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                  HOD: <span className="text-slate-800 dark:text-slate-200 font-medium">{b.hod}</span>
+                </p>
+              </div>
+
+              <div className="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700 space-y-1 text-[11px]">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span>Batch Strength:</span>
+                  <strong className="text-slate-900 dark:text-white font-mono">{b.students}</strong>
+                </div>
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                  <span>Avg Attendance:</span>
+                  <strong className="text-[#026466] dark:text-teal-400 font-mono">{b.att}</strong>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 4. Bottom Section: Official College Circulars & Audit Logs */}
+      {/* 4. Bottom Grid: Official Circulars & System Audit Ledger */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Official Campus Circulars */}
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        {/* Left 2 Cols: Institutional Circulars */}
+        <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-black">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 Official Institutional Circulars & Notices
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Broadcasting to Students, Faculty, and Exam Cell
               </p>
             </div>
             <Link
               href="/admin/announcements"
-              className="text-xs font-semibold text-[#026466] hover:underline"
+              className="text-xs font-semibold text-[#026466] dark:text-teal-400 hover:underline"
             >
-              Manage & Publish →
+              Manage & Issue Circulars →
             </Link>
           </div>
 
           <div className="space-y-3">
-            {initialCollegeAnnouncements.map((ann) => (
+            {circulars.slice(0, 3).map((ann) => (
               <div
                 key={ann.id}
-                className="rounded-lg border border-[#FECDA5]/50 bg-[#FFF6EE]/40 p-4 hover:bg-[#FFF6EE] transition space-y-2"
+                className="rounded-lg border border-[#FECDA5]/50 dark:border-amber-900/30 bg-[#FFF6EE]/40 dark:bg-amber-950/10 p-4 hover:bg-[#FFF6EE] dark:hover:bg-amber-950/20 transition space-y-2"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466]">
+                    <span className="rounded bg-[#E6F1F1] dark:bg-slate-800 border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466] dark:text-teal-400">
                       {ann.category}
                     </span>
-                    <span className="rounded bg-slate-100 border border-slate-200 px-2 py-0.5 text-[10px] font-mono text-black">
+                    <span className="rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 text-[10px] font-mono text-slate-800 dark:text-slate-300">
                       Audience: {ann.targetAudience}
                     </span>
+                    <span className="rounded bg-[#AF0606]/10 text-[#AF0606] dark:text-rose-400 px-2 py-0.5 text-[10px] font-bold">
+                      {ann.urgency}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    {ann.date}
-                  </span>
+                  <span className="text-[10px] text-slate-500 font-mono">{ann.date}</span>
                 </div>
 
-                <h4 className="text-xs font-bold text-black">{ann.title}</h4>
-                <p className="text-[11px] text-slate-700 leading-relaxed">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">{ann.title}</h4>
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
                   {ann.content}
                 </p>
-                <div className="text-[10px] text-[#AF0606] font-semibold">
+                <div className="text-[10px] text-[#AF0606] dark:text-rose-400 font-semibold">
                   Issued by: {ann.publishedBy}
                 </div>
               </div>
@@ -227,55 +249,29 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right Col: Admin System Operations */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 className="text-sm font-bold text-black">System Modules</h3>
-            <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466]">
-              Live
+        {/* Right Col: System Audit Ledger & Database Operations */}
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Real-Time Audit Trail</h3>
+            <span className="rounded bg-[#E6F1F1] dark:bg-slate-800 border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466] dark:text-teal-400">
+              Live Ledger
             </span>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <Link
-              href="/admin/hods"
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-[#FFF6EE] transition text-black"
-            >
-              <span>HOD Master Records & Appointees</span>
-              <span className="text-[#026466] font-bold">5 Heads →</span>
-            </Link>
-
-            <Link
-              href="/admin/students"
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-[#FFF6EE] transition text-black"
-            >
-              <span>Student Registry & Enrollment</span>
-              <span className="text-[#026466] font-bold">4,800 Active →</span>
-            </Link>
-
-            <Link
-              href="/admin/faculty"
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-[#FFF6EE] transition text-black"
-            >
-              <span>Faculty Workload & Deployment</span>
-              <span className="text-[#026466] font-bold">210 Staff →</span>
-            </Link>
-
-            <Link
-              href="/admin/courses"
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-[#FFF6EE] transition text-black"
-            >
-              <span>Autonomous Curriculum Catalog</span>
-              <span className="text-[#026466] font-bold">64 Courses →</span>
-            </Link>
-
-            <Link
-              href="/admin/timetable"
-              className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-[#FFF6EE] transition text-black"
-            >
-              <span>Master Schedule & Lecture Halls</span>
-              <span className="text-[#026466] font-bold">5 Timetables →</span>
-            </Link>
+          <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+            {auditLogs.slice(0, 6).map((log) => (
+              <div
+                key={log.id}
+                className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-3 text-xs space-y-1"
+              >
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold text-[#026466] dark:text-teal-400 font-mono">{log.action}</span>
+                  <span className="text-slate-500 font-mono">{log.timestamp}</span>
+                </div>
+                <p className="text-[11px] text-slate-800 dark:text-slate-200 leading-snug">{log.details}</p>
+                <div className="text-[10px] text-slate-500">By: <span className="font-semibold text-slate-700 dark:text-slate-300">{log.performedBy}</span></div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

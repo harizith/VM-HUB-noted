@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { internalMarksData } from "@/lib/studentMockData";
 
 export default function CoursesMarksPage() {
-  const [selectedCourse] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
 
   const totalCredits = internalMarksData.reduce((acc, curr) => acc + curr.credits, 0);
   const avgInternal =
@@ -16,22 +16,22 @@ export default function CoursesMarksPage() {
       {/* 1. Page Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-black">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Courses & Internal Assessment Marks
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Semester VI • Continuous Assessment Test (CAT) scores, Model exams, and internal weightages.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-right shadow-xs">
-            <span className="text-[10px] uppercase font-semibold text-slate-500 tracking-wider">Total Credits</span>
-            <p className="text-lg font-bold text-black font-mono">{totalCredits}</p>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-right shadow-xs">
+            <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider">Total Credits</span>
+            <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{totalCredits}</p>
           </div>
-          <div className="rounded-lg border border-[#026466]/30 bg-[#E6F1F1] px-3.5 py-2 text-right shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-[#026466] tracking-wider">Average Internal</span>
-            <p className="text-lg font-bold text-[#026466] font-mono">{avgInternal.toFixed(1)} / 50</p>
+          <div className="rounded-lg border border-[#026466]/30 bg-[#E6F1F1] dark:bg-[#026466]/20 px-3.5 py-2 text-right shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-[#026466] dark:text-teal-400 tracking-wider">Average Internal</span>
+            <p className="text-lg font-bold text-[#026466] dark:text-teal-400 font-mono">{avgInternal.toFixed(1)} / 50</p>
           </div>
         </div>
       </div>
@@ -47,33 +47,34 @@ export default function CoursesMarksPage() {
           return (
             <div
               key={course.id}
-              className={`rounded-xl border bg-white p-5 flex flex-col justify-between shadow-sm transition ${
-                isExpanded ? "border-[#026466] ring-1 ring-[#026466]" : "border-slate-200 hover:border-[#026466]/40"
+              onClick={() => setSelectedCourse(isExpanded ? null : course.id)}
+              className={`rounded-xl border bg-white dark:bg-slate-900 p-5 flex flex-col justify-between shadow-sm transition cursor-pointer ${
+                isExpanded ? "border-[#026466] ring-1 ring-[#026466]" : "border-slate-200 dark:border-slate-800 hover:border-[#026466]/40 dark:hover:border-[#026466]/60"
               }`}
             >
               <div>
                 {/* Header */}
-                <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="rounded bg-[#E6F1F1] border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466] font-mono">
+                      <span className="rounded bg-[#E6F1F1] dark:bg-[#026466]/30 border border-[#026466]/30 px-2 py-0.5 text-[10px] font-bold text-[#026466] dark:text-teal-300 font-mono">
                         {course.courseCode}
                       </span>
-                      <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700">
+                      <span className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300">
                         {course.credits} Credits
                       </span>
                     </div>
-                    <h3 className="mt-2 text-sm font-bold text-black leading-snug">
+                    <h3 className="mt-2 text-sm font-bold text-slate-900 dark:text-white leading-snug">
                       {course.courseTitle}
                     </h3>
-                    <p className="text-xs text-slate-600 mt-0.5">Instructor: {course.facultyName}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Instructor: {course.facultyName}</p>
                   </div>
 
                   <div className="text-right">
-                    <span className="inline-flex rounded-lg bg-[#FFF6EE] border border-[#FECDA5] px-2.5 py-1 font-mono text-sm font-bold text-[#AF0606]">
+                    <span className="inline-flex rounded-lg bg-[#FFF6EE] dark:bg-amber-950/40 border border-[#FECDA5] dark:border-amber-800/40 px-2.5 py-1 font-mono text-sm font-bold text-[#AF0606] dark:text-amber-400">
                       {course.grade}
                     </span>
-                    <p className="text-[10px] text-slate-600 mt-1 font-mono font-bold">
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 font-mono font-bold">
                       {course.totalInternal.toFixed(1)} / 50
                     </p>
                   </div>
@@ -81,41 +82,41 @@ export default function CoursesMarksPage() {
 
                 {/* Marks Breakdown Grid */}
                 <div className="grid grid-cols-3 gap-2.5 mt-3.5">
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-center">
-                    <span className="text-[10px] font-bold uppercase text-slate-600 tracking-wider">CAT-1</span>
-                    <p className="text-sm font-bold text-black font-mono mt-0.5">
-                      {course.cat1.score} <span className="text-[10px] text-slate-400">/{course.cat1.max}</span>
+                  <div className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider">CAT-1</span>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">
+                      {course.cat1.score} <span className="text-[10px] text-slate-400 dark:text-slate-500">/{course.cat1.max}</span>
                     </p>
-                    <span className="text-[10px] text-[#026466] font-mono font-bold">
+                    <span className="text-[10px] text-[#026466] dark:text-teal-400 font-mono font-bold">
                       {cat1Percent.toFixed(0)}%
                     </span>
                   </div>
 
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-center">
-                    <span className="text-[10px] font-bold uppercase text-slate-600 tracking-wider">CAT-2</span>
-                    <p className="text-sm font-bold text-black font-mono mt-0.5">
-                      {course.cat2.score} <span className="text-[10px] text-slate-400">/{course.cat2.max}</span>
+                  <div className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider">CAT-2</span>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">
+                      {course.cat2.score} <span className="text-[10px] text-slate-400 dark:text-slate-500">/{course.cat2.max}</span>
                     </p>
-                    <span className="text-[10px] text-[#026466] font-mono font-bold">
+                    <span className="text-[10px] text-[#026466] dark:text-teal-400 font-mono font-bold">
                       {cat2Percent.toFixed(0)}%
                     </span>
                   </div>
 
-                  <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-center">
-                    <span className="text-[10px] font-bold uppercase text-slate-600 tracking-wider">Model Exam</span>
-                    <p className="text-sm font-bold text-black font-mono mt-0.5">
-                      {course.modelExam.score} <span className="text-[10px] text-slate-400">/{course.modelExam.max}</span>
+                  <div className="rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 tracking-wider">Model Exam</span>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">
+                      {course.modelExam.score} <span className="text-[10px] text-slate-400 dark:text-slate-500">/{course.modelExam.max}</span>
                     </p>
-                    <span className="text-[10px] text-[#026466] font-mono font-bold">
+                    <span className="text-[10px] text-[#026466] dark:text-teal-400 font-mono font-bold">
                       {modelPercent.toFixed(0)}%
                     </span>
                   </div>
                 </div>
 
                 {/* Additional Assignment & Converted Internal */}
-                <div className="mt-3 flex items-center justify-between rounded-lg bg-[#FFF6EE]/40 px-3 py-1.5 text-xs text-slate-700 border border-[#FECDA5]/50">
-                  <span>Assignment & Seminar: <strong className="text-black">{course.assignment.score}/{course.assignment.max}</strong></span>
-                  <span className="font-bold text-[#026466]">
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-[#FFF6EE]/40 dark:bg-amber-950/20 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 border border-[#FECDA5]/50 dark:border-amber-800/30">
+                  <span>Assignment & Seminar: <strong className="text-slate-900 dark:text-white">{course.assignment.score}/{course.assignment.max}</strong></span>
+                  <span className="font-bold text-[#026466] dark:text-teal-400">
                     Weightage: {((course.totalInternal / course.maxInternal) * 100).toFixed(1)}%
                   </span>
                 </div>
@@ -126,40 +127,40 @@ export default function CoursesMarksPage() {
       </div>
 
       {/* 3. Grading Scale & Internal Assessment Formula Reference */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-        <h3 className="text-sm font-bold text-black">Evaluation Formula</h3>
-        <p className="text-xs text-slate-700 leading-relaxed">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-3">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white">Evaluation Formula</h3>
+        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
           Internal assessment weightage is computed as:
           <br />
-          <code className="inline-block my-1.5 rounded-md bg-[#E6F1F1] border border-[#026466]/20 px-2.5 py-1 font-mono text-[#026466] font-bold text-xs">
+          <code className="inline-block my-1.5 rounded-md bg-[#E6F1F1] dark:bg-[#026466]/30 border border-[#026466]/20 dark:border-teal-500/30 px-2.5 py-1 font-mono text-[#026466] dark:text-teal-300 font-bold text-xs">
             Internal (50 Marks) = (CAT-1 [50] × 0.15) + (CAT-2 [50] × 0.15) + (Model [100] × 0.25) + Assignment [10]
           </code>
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 pt-2 border-t border-slate-100">
-          <div className="rounded-lg border border-[#026466]/30 bg-[#E6F1F1] p-2 text-center">
-            <span className="text-xs font-bold text-[#026466] font-mono">Grade O</span>
-            <p className="text-[10px] text-slate-600 mt-0.5">90 - 100%</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="rounded-lg border border-[#026466]/30 bg-[#E6F1F1] dark:bg-[#026466]/20 p-2 text-center">
+            <span className="text-xs font-bold text-[#026466] dark:text-teal-400 font-mono">Grade O</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">90 - 100%</p>
           </div>
-          <div className="rounded-lg border border-[#026466]/20 bg-[#E6F1F1]/50 p-2 text-center">
-            <span className="text-xs font-bold text-[#026466] font-mono">Grade A+</span>
-            <p className="text-[10px] text-slate-600 mt-0.5">80 - 89%</p>
+          <div className="rounded-lg border border-[#026466]/20 bg-[#E6F1F1]/50 dark:bg-[#026466]/10 p-2 text-center">
+            <span className="text-xs font-bold text-[#026466] dark:text-teal-400 font-mono">Grade A+</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">80 - 89%</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-center">
-            <span className="text-xs font-bold text-black font-mono">Grade A</span>
-            <p className="text-[10px] text-slate-600 mt-0.5">70 - 79%</p>
+          <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 text-center">
+            <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">Grade A</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">70 - 79%</p>
           </div>
-          <div className="rounded-lg border border-[#FECDA5] bg-[#FFF6EE] p-2 text-center">
-            <span className="text-xs font-bold text-black font-mono">Grade B+</span>
-            <p className="text-[10px] text-slate-600 mt-0.5">60 - 69%</p>
+          <div className="rounded-lg border border-[#FECDA5] dark:border-amber-800/40 bg-[#FFF6EE] dark:bg-amber-950/30 p-2 text-center">
+            <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">Grade B+</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">60 - 69%</p>
           </div>
-          <div className="rounded-lg border border-[#FECDA5] bg-[#FFF6EE] p-2 text-center">
-            <span className="text-xs font-bold text-black font-mono">Grade B</span>
-            <p className="text-[10px] text-slate-600 mt-0.5">50 - 59%</p>
+          <div className="rounded-lg border border-[#FECDA5] dark:border-amber-800/40 bg-[#FFF6EE] dark:bg-amber-950/30 p-2 text-center">
+            <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">Grade B</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">50 - 59%</p>
           </div>
-          <div className="rounded-lg border border-[#AF0606]/30 bg-[#FDE8E8] p-2 text-center">
-            <span className="text-xs font-bold text-[#AF0606] font-mono">Grade RA</span>
-            <p className="text-[10px] text-[#AF0606] mt-0.5">&lt; 50% (Re-appear)</p>
+          <div className="rounded-lg border border-[#AF0606]/30 bg-[#FDE8E8] dark:bg-rose-950/30 p-2 text-center">
+            <span className="text-xs font-bold text-[#AF0606] dark:text-rose-400 font-mono">Grade RA</span>
+            <p className="text-[10px] text-[#AF0606] dark:text-rose-400 mt-0.5">&lt; 50% (Re-appear)</p>
           </div>
         </div>
       </div>

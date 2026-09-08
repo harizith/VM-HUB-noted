@@ -47,12 +47,12 @@ export default function TeacherMarksPage() {
 
   const getGrade = (score: number, max: number): { text: string; color: string } => {
     const pct = (score / max) * 100;
-    if (pct >= 90) return { text: "O", color: "text-[#026466] bg-[#E6F1F1] border-[#026466]/40" };
-    if (pct >= 80) return { text: "A+", color: "text-[#026466] bg-[#E6F1F1]/50 border-[#026466]/30" };
-    if (pct >= 70) return { text: "A", color: "text-black bg-slate-100 border-slate-300" };
-    if (pct >= 60) return { text: "B+", color: "text-black bg-[#FFF6EE] border-[#FECDA5]" };
-    if (pct >= 50) return { text: "B", color: "text-black bg-[#FFF6EE] border-[#FECDA5]" };
-    return { text: "RA", color: "text-[#AF0606] bg-[#FDE8E8] border-[#AF0606]/40" };
+    if (pct >= 90) return { text: "O", color: "text-[#026466] dark:text-teal-300 bg-[#E6F1F1] dark:bg-[#026466]/30 border-[#026466]/40" };
+    if (pct >= 80) return { text: "A+", color: "text-[#026466] dark:text-teal-300 bg-[#E6F1F1]/50 dark:bg-[#026466]/20 border-[#026466]/30" };
+    if (pct >= 70) return { text: "A", color: "text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700" };
+    if (pct >= 60) return { text: "B+", color: "text-slate-900 dark:text-white bg-[#FFF6EE] dark:bg-amber-950/40 border-[#FECDA5] dark:border-amber-800/40" };
+    if (pct >= 50) return { text: "B", color: "text-slate-900 dark:text-white bg-[#FFF6EE] dark:bg-amber-950/40 border-[#FECDA5] dark:border-amber-800/40" };
+    return { text: "RA", color: "text-[#AF0606] dark:text-rose-400 bg-[#FDE8E8] dark:bg-rose-950/40 border-[#AF0606]/40 dark:border-rose-800/40" };
   };
 
   // Metrics
@@ -76,32 +76,32 @@ export default function TeacherMarksPage() {
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-black">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             Internal Marks & Assessment Entry
           </h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Enter test marks for CAT-1, CAT-2, Model Exams, and internal assignments.
           </p>
         </div>
 
         {saveSuccess && (
-          <div className="flex items-center gap-2 rounded-lg bg-[#E6F1F1] border border-[#026466]/30 px-3.5 py-1.5 text-xs font-bold text-[#026466] animate-fadeIn">
-            <span>Marks Saved and Published to Exam Cell!</span>
+          <div className="flex items-center gap-2 rounded-lg bg-[#E6F1F1] dark:bg-[#026466]/30 border border-[#026466]/30 px-3.5 py-1.5 text-xs font-bold text-[#026466] dark:text-teal-300 animate-fadeIn">
+            <span>✓ Marks Saved and Published to Exam Cell!</span>
           </div>
         )}
       </div>
 
       {/* 2. Selection Toolbar */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">
+            <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1">
               Subject
             </label>
             <select
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-black focus:border-[#026466] focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-[#026466] focus:outline-none"
             >
               {teacherCourses.map((c) => (
                 <option key={`${c.code}-${c.section}`} value={c.code}>
@@ -112,13 +112,13 @@ export default function TeacherMarksPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">
+            <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1">
               Section
             </label>
             <select
               value={selectedSection}
               onChange={(e) => setSelectedSection(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-black focus:border-[#026466] focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-[#026466] focus:outline-none"
             >
               <option value="CSE-A">CSE-A (64 Students)</option>
               <option value="CSE-B">CSE-B (64 Students)</option>
@@ -126,7 +126,7 @@ export default function TeacherMarksPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-black mb-1">
+            <label className="block text-xs font-semibold text-slate-900 dark:text-white mb-1">
               Exam Component
             </label>
             <select
@@ -136,7 +136,7 @@ export default function TeacherMarksPage() {
                   e.target.value as "cat1" | "cat2" | "model" | "assignment"
                 )
               }
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-black focus:border-[#026466] focus:outline-none font-semibold"
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-[#026466] focus:outline-none font-semibold"
             >
               <option value="cat1">CAT-1 Examination (Max: 50)</option>
               <option value="cat2">CAT-2 Examination (Max: 50)</option>
@@ -149,47 +149,47 @@ export default function TeacherMarksPage() {
 
       {/* 3. Real-Time Performance Analytics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-          <span className="text-[11px] font-semibold text-slate-600">Class Average</span>
-          <p className="text-2xl font-bold text-[#026466] font-mono mt-0.5">
+        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 text-center shadow-sm">
+          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Class Average</span>
+          <p className="text-2xl font-bold text-[#026466] dark:text-teal-400 font-mono mt-0.5">
             {classAvg.toFixed(1)}{" "}
-            <span className="text-xs text-slate-400 font-normal">/ {maxScore}</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">/ {maxScore}</span>
           </p>
         </div>
 
-        <div className="rounded-xl border border-[#026466]/30 bg-[#E6F1F1] p-4 text-center shadow-sm">
-          <span className="text-[11px] font-bold text-[#026466]">Highest Score</span>
-          <p className="text-2xl font-bold text-[#026466] font-mono mt-0.5">
+        <div className="rounded-xl border border-[#026466]/30 bg-[#E6F1F1] dark:bg-[#026466]/20 p-4 text-center shadow-sm">
+          <span className="text-[11px] font-bold text-[#026466] dark:text-teal-400">Highest Score</span>
+          <p className="text-2xl font-bold text-[#026466] dark:text-teal-400 font-mono mt-0.5">
             {highest}{" "}
-            <span className="text-xs text-[#026466] font-normal">/ {maxScore}</span>
+            <span className="text-xs text-[#026466]/80 dark:text-teal-300/80 font-normal">/ {maxScore}</span>
           </p>
         </div>
 
-        <div className="rounded-xl border border-[#AF0606]/30 bg-[#FDE8E8] p-4 text-center shadow-sm">
-          <span className="text-[11px] font-bold text-[#AF0606]">Lowest Score</span>
-          <p className="text-2xl font-bold text-[#AF0606] font-mono mt-0.5">
+        <div className="rounded-xl border border-[#AF0606]/30 bg-[#FDE8E8] dark:bg-rose-950/30 p-4 text-center shadow-sm">
+          <span className="text-[11px] font-bold text-[#AF0606] dark:text-rose-400">Lowest Score</span>
+          <p className="text-2xl font-bold text-[#AF0606] dark:text-rose-400 font-mono mt-0.5">
             {lowest}{" "}
-            <span className="text-xs text-[#AF0606] font-normal">/ {maxScore}</span>
+            <span className="text-xs text-[#AF0606]/80 dark:text-rose-300/80 font-normal">/ {maxScore}</span>
           </p>
         </div>
 
-        <div className="rounded-xl border border-[#FECDA5] bg-[#FFF6EE] p-4 text-center shadow-sm">
-          <span className="text-[11px] font-bold text-black">Pass Percentage</span>
-          <p className="text-2xl font-bold text-[#026466] font-mono mt-0.5">
+        <div className="rounded-xl border border-[#FECDA5] dark:border-amber-800/40 bg-[#FFF6EE] dark:bg-amber-950/30 p-4 text-center shadow-sm">
+          <span className="text-[11px] font-bold text-slate-900 dark:text-white">Pass Percentage</span>
+          <p className="text-2xl font-bold text-[#026466] dark:text-teal-400 font-mono mt-0.5">
             {passPercent.toFixed(0)}%
           </p>
         </div>
       </div>
 
       {/* 4. Gradebook Table */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Mark Entry Roster • {selectedCourse} ({selectedSection})
             </h3>
-            <p className="text-xs text-slate-500">
-              Editing: <strong className="text-[#026466] uppercase">{assessmentType}</strong> (Max: {maxScore} Marks)
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Editing: <strong className="text-[#026466] dark:text-teal-400 uppercase">{assessmentType}</strong> (Max: {maxScore} Marks)
             </p>
           </div>
 
@@ -204,7 +204,7 @@ export default function TeacherMarksPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider">
                 <th className="py-3 px-3">Reg No</th>
                 <th className="py-3 px-3">Student Name</th>
                 <th className="py-3 px-3 text-center">Score Input (/{maxScore})</th>
@@ -212,18 +212,18 @@ export default function TeacherMarksPage() {
                 <th className="py-3 px-3 text-center">Projected Grade</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {students.map((student) => {
                 const score = getScore(student);
                 const gradeInfo = getGrade(score, maxScore);
                 const pct = ((score / maxScore) * 100).toFixed(1);
 
                 return (
-                  <tr key={student.id} className="hover:bg-slate-50 transition">
-                    <td className="py-3 px-3 font-mono text-slate-750 font-medium">
+                  <tr key={student.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                    <td className="py-3 px-3 font-mono text-slate-700 dark:text-slate-300 font-medium">
                       {student.regNo}
                     </td>
-                    <td className="py-3 px-3 font-semibold text-black">
+                    <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white">
                       {student.name}
                     </td>
                     <td className="py-3 px-3 text-center">
@@ -234,12 +234,12 @@ export default function TeacherMarksPage() {
                           max={maxScore}
                           value={score}
                           onChange={(e) => handleScoreChange(student.id, e.target.value)}
-                          className="w-16 rounded border border-slate-300 bg-white px-2.5 py-1 text-center font-mono text-xs font-bold text-black focus:border-[#026466] focus:outline-none"
+                          className="w-16 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-center font-mono text-xs font-bold text-slate-900 dark:text-white focus:border-[#026466] focus:outline-none"
                         />
-                        <span className="text-slate-400 font-mono text-xs">/ {maxScore}</span>
+                        <span className="text-slate-400 dark:text-slate-500 font-mono text-xs">/ {maxScore}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-center font-mono text-slate-700">
+                    <td className="py-3 px-3 text-center font-mono text-slate-700 dark:text-slate-300">
                       {pct}%
                     </td>
                     <td className="py-3 px-3 text-center">

@@ -1,4 +1,5 @@
 import { Branch } from "./studentMockData";
+import { REAL_STUDENTS_BATCH_2025_2029 } from "@/data/realStudents";
 
 export interface BranchStat {
   code: Branch;
@@ -239,20 +240,21 @@ export const initialAdminHODs: AdminHODRecord[] = [
 ];
 
 export const initialAdminStudents: AdminStudentRecord[] = [
-  {
-    id: "adm-stu-1",
-    regNo: "22104101",
-    name: "Sample Student",
-    email: "student@veltech.edu.in",
-    branch: "CSE",
-    section: "CSE-A",
-    year: "3rd Year",
-    semester: 6,
-    attendancePercent: 88.1,
-    cgpa: 8.74,
-    mentor: "Dr. K. Senthil Kumar",
-    status: "Active",
-  },
+  // 180 Official Batch 2025-2029 CSE Students
+  ...REAL_STUDENTS_BATCH_2025_2029.map((s) => ({
+    id: `adm-stu-${s.vmNo}`,
+    regNo: s.regNo,
+    name: s.name,
+    email: s.email,
+    branch: "CSE" as Branch,
+    section: `CSE-${s.section}`,
+    year: "Year II",
+    semester: 3,
+    attendancePercent: s.vmNo === "17433" ? 92.5 : 88.0,
+    cgpa: s.vmNo === "17433" ? 8.85 : 8.5,
+    mentor: s.mentorName,
+    status: "Active" as const,
+  })),
   {
     id: "adm-stu-2",
     regNo: "22104102",
